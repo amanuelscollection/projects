@@ -1,5 +1,6 @@
 /*
 This code was written to create a database for a hospital with several different tables to represent the different moving parts in one.
+Designed primarily to help with the retrieval and storage of information related to hospital management and patient care.
 */
 
 DROP DATABASE IF EXISTS hospital;
