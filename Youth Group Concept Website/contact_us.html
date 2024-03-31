@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habasha Youth Group of Charlotte</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/habashaflags.ico" type="image/x-icon">
+    <style>
+        .logo {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo">
+                <img src="images/IMG_6867.jpg" alt="Habasha Youth Group Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="events.html">Events</a></li>
+                    <li><a href="about_us.html">About Us</a></li>
+                    <li><a href="contact_us.html">Contact Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-container">
+            <h1>Contact Us</h1>
+            <div class="contact-info">
+                <p>Phone: 123-456-7890</p>
+                <p>Email: info@habashayouthclt.org</p>
+                <p>Address: 123 Main St, Charlotte, NC 28202</p>
+            </div>
+            
+            <form action="submit_form.php" method="POST" class="contact-form">
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" required><br>
+                <label for="event">Event Name:</label><br>
+                <input type="text" id="event" name="event" required><br>
+                <label for="phone">Phone Number:</label><br>
+                <input type="tel" id="phone" name="phone" required><br>
+                <label for="notes">Additional Notes:</label><br>
+                <textarea id="notes" name="notes" rows="4"></textarea><br>
+                <input type="submit" value="Submit" class="submit-button">
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <div class="copyright">
+            &copy;2024 Habasha Youth Group of Charlotte. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
