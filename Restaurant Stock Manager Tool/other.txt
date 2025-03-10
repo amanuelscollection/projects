@@ -1,0 +1,202 @@
+This is to make sure things are working.
+
+import random
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status, Response, Depends
+from ..models import orders as model
+from sqlalchemy.exc import SQLAlchemyError
+from ..schemas import orders as schema
+
+
+def create(db: Session, request: schema.OrderCreate):
+    total_price = calculate_total_price()
+    tracking_number = generate_tracking_number()
+    new_item = model.Order(
+        id=request.id,
+        tracking_number=tracking_number,
+        customer_phone_number=request.customer_phone_number,
+        takeout_delivery=request.takeout_delivery,
+        item_id=request.item_id,
+        total_price=request.total_price,
+        discount_amount=request.discount_amount
+    )
+
+    try:
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+
+    return new_item
+
+def generate_tracking_number():
+    return ''.join(random.choices('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=10))
+
+
+def read_all(db: Session):
+    try:
+        result = db.query(model.Order).all()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return result
+
+
+def read_one(db: Session, item_id):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id).first()
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return item
+
+
+def update(db: Session, item_id, request: schema.OrderUpdate):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id)
+        if not item.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+        update_data = request.dict(exclude_unset=True)
+        item.update(update_data, synchronize_session=False)
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return item.first()
+
+
+def delete(db: Session, item_id):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id)
+        if not item.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+        item.delete(synchronize_session=False)
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+def calculate_total_price(self):
+        total_price = self.menu.item_price
+        if self.discount_amount > 0:
+            total_price -= (total_price * self.discount_amount / 100)
+        self.total_price = total_price
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+        import random
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status, Response
+from ..models import orders as order_model
+from ..models import order_details as order_detail_model  # Import OrderDetail model
+from ..schemas import orders as order_schema
+from ..schemas import order_details as order_detail_schema  # Import OrderDetail schema
+from sqlalchemy.exc import SQLAlchemyError
+
+def create_order_detail(db: Session, request: order_detail_schema.OrderDetailCreate, order_id: int):
+    new_order_detail = order_detail_model.OrderDetail(
+        ingredient_name=request.ingredient_name,
+        ingredient_amount=request.ingredient_amount,
+        item_id=request.item_id,
+        order_id=order_id  
+    )
+    db.add(new_order_detail)
+    db.commit()
+    return new_order_detail
+
+def create_order(db: Session, request: order_schema.OrderCreate):
+    total_price = calculate_total_price(request.item_id)  
+    tracking_number = generate_tracking_number()
+    
+    new_order = order_model.Order(
+        tracking_number=tracking_number,
+        customer_phone_number=request.customer_phone_number,
+        takeout_delivery=request.takeout_delivery,
+        total_price=total_price,
+        discount_amount=request.discount_amount
+    )
+
+    try:
+        db.add(new_order)
+        db.commit()
+        db.refresh(new_order)
+        
+        # Call create_order_detail function to add OrderDetail to the order_details table
+        create_order_detail(db, request, new_order.id)
+        
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+
+    return new_order
+
+
+
+def read_all(db: Session):
+    try:
+        result = db.query(model.Order).all()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return result
+
+
+def read_one(db: Session, item_id):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id).first()
+        if not item:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return item
+
+
+def update(db: Session, item_id):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id)
+        if not item.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+        update_data = request.dict(exclude_unset=True)
+        item.update(update_data, synchronize_session=False)
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return item.first()
+
+
+def delete(db: Session, item_id):
+    try:
+        item = db.query(model.Order).filter(model.Order.id == item_id)
+        if not item.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+        item.delete(synchronize_session=False)
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def calculate_total_price(item_id: int):
+    def calculate_total_price(self):
+        total_price = self.menu.item_price
+        if self.discount_amount > 0:
+            total_price -= (total_price * self.discount_amount / 100)
+        self.total_price = total_price
+    
+
+def generate_tracking_number():
+    return ''.join(random.choices('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=10))
